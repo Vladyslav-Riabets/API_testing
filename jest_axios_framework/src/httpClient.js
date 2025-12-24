@@ -10,20 +10,21 @@ const httpClient = axios.create({
 });
 
 httpClient.interceptors.request.use(
-  (request) => {
-    const method = (request.method || 'get').toUpperCase();
+  (config) => {
+    const method = (config.method || 'get').toUpperCase();
+    const fullUrl = `${config.baseURL || ''}${config.url || ''}`;
 
-    console.log(`[REQUEST] ${method} ${request.baseURL || ''}${request.url}`);
+    console.log(`[REQUEST] ${method} ${fullUrl}`);
 
-    if (request.params) {
-      console.log('[REQUEST PARAMS]', request.params);
+    if (config.params && Object.keys(config.params).length > 0) {
+      console.log('[REQUEST PARAMS]', config.params);
     }
 
-    if (request.data) {
-      console.log('[REQUEST BODY]', request.data);
+    if (config.data) {
+      console.log('[REQUEST BODY]', config.data);
     }
 
-    return request;
+    return config;
   },
   (error) => {
     console.error('[REQUEST ERROR]', error.message);

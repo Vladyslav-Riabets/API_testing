@@ -1,8 +1,9 @@
-const apiService = require('/src/apiService');
-const testData = require('/data/testData');
+const apiService = require("/src/apiService");
+const testData = require("/data/testData");
+const shapes = require("./helpers/shapes")
 
 describe("GET /users", () => {
-  test("should return all users", async () => {
+  test("TEST 1: should return all users", async () => {
     const response = await apiService.getAllUsers();
 
     expect(response.status).toBe(200);
@@ -10,50 +11,60 @@ describe("GET /users", () => {
     expect(response.data.length).toBeGreaterThan(0);
   });
 
-  test("should return used with id=1", async () => {
+  test("TEST 2: should return used with id=1", async () => {
     const userId = 1;
 
     const response = await apiService.getUserById(userId);
 
     expect(response.status).toBe(200);
-    expect(response.data.id).toBe(userId);
-    expect(response.data).toHaveProperty("name");
-    expect(response.data).toHaveProperty("email");
+    shapes.expectUser(response.data);
   });
 
-  test("should return users with correct structure", async () => {
-    const response = await apiService.getAllUsers();
-    const users = response.data;
+  test("TEST 3: should return correct data types", async () => {
+    const userId = 1;
+    const response = await apiService.getUserById(userId);
+    const user = response.data;
 
-    if (users.length > 0) {
-      const user = users[0];
-      expect(user).toHaveProperty("id");
-      expect(user).toHaveProperty("name");
-      expect(user).toHaveProperty("email");
-      expect(user).toHaveProperty("username");
-    }
+    expect(response.status).toBe(200);
+    shapes.expectUser(response.data);
   });
+
+  describe("Negative test", () => {
+    test("TEST 4: should return 404 for non-existent user", async () => {
+      const nonExistentId = 99999;
+
+      try{
+        const response = await apiService.getUserById(nonExistentId);
+      } catch (error) {
+        expect(error.response.status).toBe(404);
+      }
+    });
+  });
+  
 });
 
 describe("POST /users", () => {
-  test("should create new user", async () => {
+  test("TEST 5: should create new user", async () => {
     const newUser = testData.validUser;
     const response = await apiService.createUser(newUser);
 
     expect(response.status).toBe(201);
-    expect(response.data).toHaveProperty('id');
+    shapes.expectUser(response.data);
     expect(response.data.name).toBe(newUser.name);
+    expect(response.data.username).toBe(newUser.username);
     expect(response.data.email).toBe(newUser.email);
+    expect(response.data.phone).toBe(newUser.phone);
+    expect(response.data.website).toBe(newUser.website);
   });
 });
 
 describe("POST /posts", () => {
-  test("should create new post", async () => {
+  test("TEST 6: should create new post", async () => {
     const newPost = testData.validPost;
     const response = await apiService.createPost(newPost);
 
     expect(response.status).toBe(201);
-    expect(response.data).toHaveProperty('id');
+    shapes.expectPost(response.data);
     expect(response.data.title).toBe(newPost.title);
     expect(response.data.body).toBe(newPost.body);
     expect(response.data.userId).toBe(newPost.userId);
